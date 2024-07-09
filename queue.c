@@ -14,15 +14,52 @@
 /* Create an empty queue */
 struct list_head *q_new()
 {
-    return NULL;
+    struct list_head *head = malloc(sizeof(struct list_head));
+    if (!head)
+        return NULL;
+    INIT_LIST_HEAD(head);
+    return head;
 }
 
 /* Free all storage used by queue */
-void q_free(struct list_head *head) {}
+void q_free(struct list_head *head)
+{
+    if (!head)
+        return;
+    element_t *entry, *safe;
+    list_for_each_entry_safe (entry, safe, head, list)
+        q_release_element(entry);
+    free(head);
+    return;
+}
+
+/* Create a new element with a given string */
+element_t *q_new_elem(const char *s)
+{
+    element_t *elem = malloc(sizeof(element_t));
+    if (!elem)
+        return NULL;
+
+    elem->value = strdup(s);
+    if (!elem->value) {
+        free(elem);
+        return NULL;
+    }
+
+    INIT_LIST_HEAD(&elem->list);
+    return elem;
+}
 
 /* Insert an element at head of queue */
+// cppcheck-suppress constParameterPointer
 bool q_insert_head(struct list_head *head, char *s)
 {
+    if (!head)
+        return false;
+    element_t *elem = q_new_elem(s);
+    if (!elem)
+        return false;
+    list_add(&elem->list, head);
     return true;
 }
 
