@@ -64,21 +64,52 @@ bool q_insert_head(struct list_head *head, char *s)
 }
 
 /* Insert an element at tail of queue */
+// cppcheck-suppress constParameterPointer
 bool q_insert_tail(struct list_head *head, char *s)
 {
+    if (!head)
+        return false;
+    element_t *elem = q_new_elem(s);
+    if (!elem)
+        return false;
+    list_add_tail(&elem->list, head);
     return true;
 }
 
 /* Remove an element from head of queue */
+// cppcheck-suppress constParameterPointer
 element_t *q_remove_head(struct list_head *head, char *sp, size_t bufsize)
 {
-    return NULL;
+    if (!head || list_empty(head))
+        return NULL;
+    element_t *elem = list_first_entry(head, element_t, list);
+    list_del(&elem->list);
+    if (sp) {
+        size_t size = strlen(elem->value);
+        if (size > bufsize - 1)
+            size = bufsize - 1;
+        strncpy(sp, elem->value, size);
+        sp[size] = '\0';
+    }
+    return elem;
 }
 
 /* Remove an element from tail of queue */
+// cppcheck-suppress constParameterPointer
 element_t *q_remove_tail(struct list_head *head, char *sp, size_t bufsize)
 {
-    return NULL;
+    if (!head || list_empty(head))
+        return NULL;
+    element_t *elem = list_last_entry(head, element_t, list);
+    list_del(&elem->list);
+    if (sp) {
+        size_t size = strlen(elem->value);
+        if (size > bufsize - 1)
+            size = bufsize - 1;
+        strncpy(sp, elem->value, size);
+        sp[size] = '\0';
+    }
+    return elem;
 }
 
 /* Return number of elements in queue */
