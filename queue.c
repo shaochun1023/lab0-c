@@ -130,13 +130,40 @@ int q_size(struct list_head *head)
 bool q_delete_mid(struct list_head *head)
 {
     // https://leetcode.com/problems/delete-the-middle-node-of-a-linked-list/
+    if (!head || list_empty(head))
+        return false;
+    struct list_head *forward = head->next;
+    struct list_head *backward = head->prev;
+    while (forward != backward && forward->next != backward) {
+        forward = forward->next;
+        backward = backward->prev;
+    }
+    element_t *elem = list_entry(backward, element_t, list);
+    list_del(backward);
+    q_release_element(elem);
     return true;
 }
 
 /* Delete all nodes that have duplicate string */
+// cppcheck-suppress constParameterPointer
 bool q_delete_dup(struct list_head *head)
 {
     // https://leetcode.com/problems/remove-duplicates-from-sorted-list-ii/
+    if (!head || list_empty(head))
+        return false;
+    element_t *entry, *safe;
+    bool flag = false;
+    list_for_each_entry_safe (entry, safe, head, list) {
+        if (&safe->list != head && !strcmp(entry->value, safe->value)) {
+            list_del(&entry->list);
+            q_release_element(entry);
+            flag = true;
+        } else if (flag) {
+            list_del(&entry->list);
+            q_release_element(entry);
+            flag = false;
+        }
+    }
     return true;
 }
 
@@ -144,10 +171,40 @@ bool q_delete_dup(struct list_head *head)
 void q_swap(struct list_head *head)
 {
     // https://leetcode.com/problems/swap-nodes-in-pairs/
+    if (!head || list_empty(head) || list_is_singular(head))
+        return;
+    struct list_head *node;
+    list_for_each (node, head) {
+        struct list_head *prev = node->prev;
+        struct list_head *next = node->next->next;
+        struct list_head *pair = node->next;
+        if (pair != head) {
+            node->next = next;
+            node->prev = pair;
+            pair->next = node;
+            pair->prev = prev;
+            prev->next = pair;
+            next->prev = node;
+        }
+    }
+    return;
 }
 
 /* Reverse elements in queue */
-void q_reverse(struct list_head *head) {}
+void q_reverse(struct list_head *head)
+{
+    if (!head || list_empty(head))
+        return;
+    struct list_head *node, *safe, *prev = head;
+    list_for_each_safe (node, safe, head) {
+        node->next = prev;
+        node->prev = safe;
+        prev = node;
+    }
+    node->next = prev;
+    node->prev = safe;
+    return;
+}
 
 /* Reverse the nodes of the list k at a time */
 void q_reverseK(struct list_head *head, int k)
