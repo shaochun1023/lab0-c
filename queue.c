@@ -33,7 +33,7 @@ void q_free(struct list_head *head)
     return;
 }
 
-/* Create a new element with a given string */
+/* Helper function to create a new element with a given string */
 element_t *q_new_elem(const char *s)
 {
     element_t *elem = malloc(sizeof(element_t));
